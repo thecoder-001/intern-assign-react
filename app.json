@@ -40,7 +40,14 @@
             "buildToolsVersion": "34.0.0"
           }
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you combine them."
+        }
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
