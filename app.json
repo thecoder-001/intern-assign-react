@@ -22,7 +22,13 @@
         "monochromeImage": "./assets/images/ic_launcher_monochrome.png",
         "backgroundColor": "#009688"
       },
-      "package": "com.thecoder001.flicktask"
+      "package": "com.thecoder001.flicktask",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -59,6 +65,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d6f26afe-9ae4-4a9a-98fd-0fc5515050e8"
+      }
     }
   }
 }
