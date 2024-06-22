@@ -58,6 +58,9 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
       const ffmpegCommand = `-y -i "${videoUri}" -i "${photoUri}" -filter_complex "
       [1:v]scale=160:160,geq='st(3,pow(X-(W/2),2)+pow(Y-(H/2),2));if(lte(ld(3),pow(min(W/2,H/2),2)),255,0)':128:128,setsar=1[mask];
       [1:v]scale=160:160[a];[a][mask]alphamerge[b];[0:v][b]overlay=10:H-h-10" -b:v 2M -c:a copy "${outputUri}"`;
+      // scales the photo to 160x160, creates a circular mask, and overlays it on the video
+      // also manually set birate to 2M as it's choppy/blocky otherwise
+      // directly copy audio
 
       console.log('FFmpeg command:', ffmpegCommand);
 
