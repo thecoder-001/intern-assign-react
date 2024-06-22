@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Image, ImageSourcePropType, StyleSheet, Dimensions, Alert, Platform, Linking } from "react-native";
+import { View, Image, ImageSourcePropType, StyleSheet, Dimensions, Alert, Platform, Linking, TouchableWithoutFeedback } from "react-native";
 import VideoPreview from "@/components/VideoPreview";
 import { Text, useTheme, IconButton, Dialog, Portal, Button } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
@@ -29,8 +29,11 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
   // dialog code
   const [visible, setVisible] = React.useState(false);
+  const [photoDialogVisible, setPhotoDialogVisible] = React.useState(false);
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
+  const showPhotoDialog = () => setPhotoDialogVisible(true);
+  const hidePhotoDialog = () => setPhotoDialogVisible(false);
   const [outputUri, setOutputUri] = useState<string | null>(null);
   const openPhotos = () => {
     switch (Platform.OS) {
@@ -44,7 +47,11 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
         console.log("Could not open gallery app");
     }
   }
-
+  // preview uncropped image on long press
+  const handleLongPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    showPhotoDialog();
+  };
 
   const handleDownload = async () => {
     setIsLoading(true); // show loading animation
@@ -101,13 +108,15 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
         </View>
         <View style={styles.mediaWrapper}>
           <Text variant="titleLarge" style={styles.mediaTitle}>Photo {index}</Text>
-          <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
-            <Image
-              source={photoSource}
-              style={styles.media}
-              resizeMode="cover"
-            />
-          </View>
+          <TouchableWithoutFeedback onLongPress={handleLongPress}>
+            <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
+              <Image
+                source={photoSource}
+                style={styles.media}
+                resizeMode="cover"
+              />
+            </View>
+          </TouchableWithoutFeedback>
         </View>
         <View style={styles.buttonWrapper}>
           {isLoading ? (
@@ -147,6 +156,21 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
           <Dialog.Actions>
             <Button onPress={openPhotos}>Open gallery</Button>
             <Button onPress={hideDialog}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+        <Dialog visible={photoDialogVisible} onDismiss={hidePhotoDialog} style={{ width: mediaWidth + 100, alignSelf: 'center' }}>
+          <Dialog.Title>Photo {index}</Dialog.Title>
+          <Dialog.Content>
+            <View style={[styles.mediaFrame, { width: dialogWidth, height: dialogHeight, alignSelf: 'center', backgroundColor:theme.colors.onPrimary }]}>
+              <Image
+                source={photoSource}
+                style={styles.media}
+                resizeMode="contain"
+              />
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hidePhotoDialog}>Close</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
