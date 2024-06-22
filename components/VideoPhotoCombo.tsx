@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, ImageSourcePropType, StyleSheet, Dimensions, Alert } from "react-native";
 import VideoPreview from "@/components/VideoPreview";
-import { Text, useTheme, IconButton, Snackbar } from 'react-native-paper';
+import { Text, useTheme, IconButton, Dialog, Portal, Button } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
@@ -21,6 +21,11 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
   const mediaWidth = (windowWidth - 60) * 0.42;
   const mediaHeight = (mediaWidth * 16) / 9;
 
+  const [visible, setVisible] = React.useState(false);
+  const showDialog = () => setVisible(true);
+  const hideDialog = () => setVisible(false);
+  const [outputUri, setOutputUri] = useState<string | null>(null);
+
   const handleDownload = async () => {
     setIsLoading(true);
     try {
@@ -28,28 +33,29 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
       const videoUri = Image.resolveAssetSource(videoSource).uri;
       const photoUri = Image.resolveAssetSource(photoSource).uri;
       const outputUri = `${FileSystem.documentDirectory}output.mp4`;
-    
+
       const ffmpegCommand = `-y -i "${videoUri}" -i "${photoUri}" -filter_complex "
       [1:v]scale=160:160,geq='st(3,pow(X-(W/2),2)+pow(Y-(H/2),2));if(lte(ld(3),pow(min(W/2,H/2),2)),255,0)':128:128,setsar=1[mask];
       [1:v]scale=160:160[a];[a][mask]alphamerge[b];[0:v][b]overlay=10:H-h-10" -b:v 2M -c:a copy "${outputUri}"`;
-    
+
       console.log('FFmpeg command:', ffmpegCommand);
-    
+
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
         throw new Error('Media Library permission not granted');
       }
-    
+
       await FFmpegKit.execute(ffmpegCommand);
-      
+
       await MediaLibrary.saveToLibraryAsync(outputUri);
-      
+      setOutputUri(outputUri);
 
     } catch (error) {
       console.error('FFmpeg process failed', error);
       Alert.alert('Error', 'Failed to save the video');
     } finally {
       setIsLoading(false);
+      showDialog();
       onShowSnackBar();
     }
   };
@@ -93,6 +99,22 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
           )}
         </View>
       </View>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Title>Saved!</Dialog.Title>
+          <Dialog.Content>
+            {/* <Text variant="bodyMedium">This is simple dialog</Text> */}
+            {outputUri && typeof outputUri === 'string' ? (
+              <VideoPreview source={{ uri: outputUri }} width={mediaWidth} height={mediaHeight} />
+            ) : (
+              <Text>No output video available</Text>
+            )}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={hideDialog}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };

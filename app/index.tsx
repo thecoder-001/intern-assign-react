@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, ImageSourcePropType, StyleSheet } from "react-native";
-import { Snackbar, Text, useTheme } from 'react-native-paper';
+import { Snackbar, Text, useTheme, Portal } from 'react-native-paper';
 import { FFmpegKit } from 'ffmpeg-kit-react-native';
 import VideoPhotoCombo from '@/components/VideoPhotoCombo';
 import * as MediaLibrary from 'expo-media-library';
@@ -40,29 +40,32 @@ export default function Index() {
   ];
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text variant="headlineLarge" style={{ alignSelf: 'center' }}>Flick</Text>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        {combos.map((combo, index) => (
-          <VideoPhotoCombo
-            key={index}
-            index={index + 1}
-            videoSource={combo.videoSource}
-            photoSource={combo.photoSource}
-            onShowSnackBar={onShowSnackBar}
-          />
-        ))}
-      </ScrollView>
-      <Snackbar
-        visible={visible}
-        onDismiss={onDismissSnackBar}
-        action={{
-          label: 'Open',
-          onPress: () => {
-            console.log("Todo open gallery");
-          },
-        }}>
-        Saved!
-      </Snackbar>
+      <Portal.Host>
+        <Text variant="headlineLarge" style={{ alignSelf: 'center' }}>Flick</Text>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          {combos.map((combo, index) => (
+            <VideoPhotoCombo
+              key={index}
+              index={index + 1}
+              videoSource={combo.videoSource}
+              photoSource={combo.photoSource}
+              onShowSnackBar={onShowSnackBar}
+            />
+          ))}
+        </ScrollView>
+        <Snackbar
+          visible={visible}
+          onDismiss={onDismissSnackBar}
+          action={{
+            label: 'Error!',
+            onPress: () => {
+              console.log('Error!');
+              onDismissSnackBar();
+            },
+          }}>
+          Saved!
+        </Snackbar>
+      </Portal.Host>
     </SafeAreaView>
   );
 }

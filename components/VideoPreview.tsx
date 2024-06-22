@@ -4,7 +4,7 @@ import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { IconButton } from 'react-native-paper';
 
 interface VideoPreviewProps {
-    source: number;
+    source: number | { uri: string };
     width: number;
     height: number;
 }
