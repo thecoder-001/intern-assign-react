@@ -10,16 +10,20 @@ interface VideoPreviewProps {
 }
 
 export default function VideoPreview({ source, width, height }: VideoPreviewProps) {
-    const video = useRef(null);
-    const [status, setStatus] = useState({});
+    const video = useRef<Video>(null);
+    const [status, setStatus] = useState<{ isPlaying: boolean }>({ isPlaying: false });
     const [isPlaying, setIsPlaying] = useState(false);
     const fadeAnim = useRef(new Animated.Value(1)).current;
 
     const handlePlayPause = () => {
         if (status.isPlaying) {
-            video.current.pauseAsync();
+            if (video.current) {
+                video.current.pauseAsync();
+            }
         } else {
-            video.current.playAsync();
+            if (video.current) {
+                video.current.playAsync();
+            }
         }
     };
 
