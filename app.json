@@ -18,8 +18,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/ic_launcher_foreground.png",
+        "monochromeImage": "./assets/images/ic_launcher_monochrome.png",
+        "backgroundColor": "#009688"
       },
       "package": "com.thecoder001.flicktask"
     },
