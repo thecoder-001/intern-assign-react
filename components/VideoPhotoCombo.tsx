@@ -6,6 +6,8 @@ import LottieView from 'lottie-react-native';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { FFmpegKit } from 'ffmpeg-kit-react-native';
+import * as Haptics from 'expo-haptics';
+
 
 interface VideoPhotoComboProps {
   index: number;
@@ -73,10 +75,12 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
     } catch (error) {
       console.error('FFmpeg process failed', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       onShowSnackBar();
     } finally {
       setIsLoading(false);
       showDialog();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   };
 
@@ -115,7 +119,10 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
               icon="download"
               mode="contained"
               size={40}
-              onPress={handleDownload}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleDownload();
+            }}
               iconColor={theme.colors.background}
               containerColor={theme.colors.primary}
             />
