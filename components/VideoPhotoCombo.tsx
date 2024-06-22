@@ -18,9 +18,14 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const windowWidth = Dimensions.get('window').width;
-  const mediaWidth = (windowWidth - 60) * 0.42;
+  // width and height for previews, preserving 16:9 aspect ratio
+  const mediaWidth = (windowWidth - 100) * 0.42;
   const mediaHeight = (mediaWidth * 16) / 9;
+  // for the dialog window
+  const dialogWidth = (windowWidth) * 0.42;
+  const dialogHeight = (dialogWidth * 16) / 9;
 
+  // dialog code
   const [visible, setVisible] = React.useState(false);
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
@@ -40,9 +45,10 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
 
   const handleDownload = async () => {
-    setIsLoading(true);
+    setIsLoading(true); // show loading animation
     try {
       console.log(`Downloading combo ${index}`);
+      // resolve the asset to URIs
       const videoUri = Image.resolveAssetSource(videoSource).uri;
       const photoUri = Image.resolveAssetSource(photoSource).uri;
       const outputUri = `${FileSystem.documentDirectory}output.mp4`;
@@ -53,6 +59,7 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
       console.log('FFmpeg command:', ffmpegCommand);
 
+      // request media permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
         throw new Error('Media Library permission not granted');
@@ -60,6 +67,7 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
       await FFmpegKit.execute(ffmpegCommand);
 
+      // save the output video to the media library & set output uri for dialog
       await MediaLibrary.saveToLibraryAsync(outputUri);
       setOutputUri(outputUri);
 
@@ -74,16 +82,18 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.colors.primary }]}>{index}</Text>
       <View style={styles.contentRow}>
+        <View style={styles.indexing}>
+          <Text variant="titleLarge" style={styles.mediaTitle}>{index}.</Text>
+        </View>
         <View style={styles.mediaWrapper}>
-          <Text style={[styles.mediaTitle, { color: theme.colors.secondary }]}>Video {index}</Text>
+          <Text variant="titleLarge" style={styles.mediaTitle}>Video {index}</Text>
           <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
             <VideoPreview source={videoSource} width={mediaWidth} height={mediaHeight} />
           </View>
         </View>
         <View style={styles.mediaWrapper}>
-          <Text style={[styles.mediaTitle, { color: theme.colors.secondary }]}>Photo {index}</Text>
+          <Text variant="titleLarge" style={styles.mediaTitle}>Photo {index}</Text>
           <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
             <Image
               source={photoSource}
@@ -116,10 +126,9 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
         <Dialog visible={visible} onDismiss={hideDialog} style={{ width: mediaWidth + 100, alignSelf: 'center' }}>
           <Dialog.Title>Saved!</Dialog.Title>
           <Dialog.Content>
-            {/* <Text variant="bodyMedium">This is simple dialog</Text> */}
             {outputUri && typeof outputUri === 'string' ? (
-              <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight, alignSelf: 'center' }]}>
-                <VideoPreview source={{ uri: outputUri }} width={mediaWidth} height={mediaHeight} />
+              <View style={[styles.mediaFrame, { width: dialogWidth, height: dialogHeight, alignSelf: 'center' }]}>
+                <VideoPreview source={{ uri: outputUri }} width={dialogWidth} height={dialogHeight} />
               </View>
             ) : (
               <Text>No output video available</Text>
@@ -140,21 +149,19 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
   contentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  indexing: {
+    alignSelf: 'flex-start',
+    width: '6%'
+  },
   mediaWrapper: {
     width: '42%',
   },
   mediaTitle: {
-    fontSize: 16,
     marginBottom: 5,
   },
   mediaFrame: {
