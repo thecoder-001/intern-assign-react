@@ -7,6 +7,7 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { FFmpegKit } from 'ffmpeg-kit-react-native';
 import * as Haptics from 'expo-haptics';
+import ImagePicker, { Image as ImagePickerImage } from 'react-native-image-crop-picker';
 
 
 interface VideoPhotoComboProps {
@@ -19,6 +20,7 @@ interface VideoPhotoComboProps {
 const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, photoSource, onShowSnackBar }) => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [croppedPhotoUri, setCroppedPhotoUri] = useState<string | null>(null);
   const windowWidth = Dimensions.get('window').width;
   // width and height for previews, preserving 16:9 aspect ratio
   const mediaWidth = (windowWidth - 100) * 0.42;
@@ -53,13 +55,31 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
     showPhotoDialog();
   };
 
+  const handleCropImage = async () => {
+    try {
+      const photoUri = Image.resolveAssetSource(photoSource).uri;
+      const result = await ImagePicker.openCropper({
+        path: photoUri,
+        width: 160,
+        height: 160,
+        cropperCircleOverlay: true,
+        cropping: true,
+        mediaType: 'photo',
+      });
+      setCroppedPhotoUri((result as ImagePickerImage).path);
+    } catch (error) {
+      console.error('Image cropping failed', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
   const handleDownload = async () => {
     setIsLoading(true); // show loading animation
     try {
       console.log(`Downloading combo ${index}`);
       // resolve the asset to URIs
       const videoUri = Image.resolveAssetSource(videoSource).uri;
-      const photoUri = Image.resolveAssetSource(photoSource).uri;
+      const photoUri = croppedPhotoUri || Image.resolveAssetSource(photoSource).uri;
       const outputUri = `${FileSystem.documentDirectory}output.mp4`;
 
       const ffmpegCommand = `-y -i "${videoUri}" -i "${photoUri}" -filter_complex "
@@ -107,17 +127,29 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
           </View>
         </View>
         <View style={styles.mediaWrapper}>
-          <Text variant="titleLarge" style={styles.mediaTitle}>Photo {index}</Text>
-          <TouchableWithoutFeedback onLongPress={handleLongPress}>
-            <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
-              <Image
-                source={photoSource}
-                style={styles.media}
-                resizeMode="cover"
+        <Text variant="titleLarge" style={styles.mediaTitle}>Photo {index}</Text>
+        <TouchableWithoutFeedback onLongPress={handleLongPress}>
+          <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight }]}>
+            <Image
+              source={croppedPhotoUri ? { uri: croppedPhotoUri } : photoSource}
+              style={styles.media}
+              resizeMode="cover"
+            />
+            <View style={styles.cropButtonContainer}>
+              <IconButton
+                icon="crop"
+                size={24}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  handleCropImage();
+                }}
+                iconColor={theme.colors.background}
+                containerColor={theme.colors.primary}
               />
             </View>
-          </TouchableWithoutFeedback>
-        </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
         <View style={styles.buttonWrapper}>
           {isLoading ? (
             <LottieView
@@ -219,6 +251,11 @@ const styles = StyleSheet.create({
   lottieAnimation: {
     width: 40,
     height: 40,
+  },
+  cropButtonContainer: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
   },
 });
 
