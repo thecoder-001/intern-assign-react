@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Image, ImageSourcePropType, StyleSheet, Dimensions, Alert } from "react-native";
+import { View, Image, ImageSourcePropType, StyleSheet, Dimensions, Alert, Platform, Linking } from "react-native";
 import VideoPreview from "@/components/VideoPreview";
 import { Text, useTheme, IconButton, Dialog, Portal, Button } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
@@ -25,6 +25,19 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
   const [outputUri, setOutputUri] = useState<string | null>(null);
+  const openPhotos = () => {
+    switch (Platform.OS) {
+      case "ios":
+        Linking.openURL("photos-redirect://");
+        break;
+      case "android":
+        Linking.openURL("content://media/internal/images/media");
+        break;
+      default:
+        console.log("Could not open gallery app");
+    }
+  }
+
 
   const handleDownload = async () => {
     setIsLoading(true);
@@ -100,17 +113,20 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
         </View>
       </View>
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
+        <Dialog visible={visible} onDismiss={hideDialog} style={{ width: mediaWidth + 100, alignSelf: 'center' }}>
           <Dialog.Title>Saved!</Dialog.Title>
           <Dialog.Content>
             {/* <Text variant="bodyMedium">This is simple dialog</Text> */}
             {outputUri && typeof outputUri === 'string' ? (
-              <VideoPreview source={{ uri: outputUri }} width={mediaWidth} height={mediaHeight} />
+              <View style={[styles.mediaFrame, { width: mediaWidth, height: mediaHeight, alignSelf: 'center' }]}>
+                <VideoPreview source={{ uri: outputUri }} width={mediaWidth} height={mediaHeight} />
+              </View>
             ) : (
               <Text>No output video available</Text>
             )}
           </Dialog.Content>
           <Dialog.Actions>
+            <Button onPress={openPhotos}>Open gallery</Button>
             <Button onPress={hideDialog}>Done</Button>
           </Dialog.Actions>
         </Dialog>
