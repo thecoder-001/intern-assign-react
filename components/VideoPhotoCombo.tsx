@@ -107,6 +107,7 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
               size={40}
               onPress={handleDownload}
               iconColor={theme.colors.background}
+              containerColor={theme.colors.primary}
             />
           )}
         </View>
