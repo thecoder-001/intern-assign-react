@@ -1,12 +1,19 @@
 import { Video, ResizeMode } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { IconButton, TouchableRipple } from 'react-native-paper';
+import { View, StyleSheet, Animated, Dimensions } from 'react-native';
+import { IconButton } from 'react-native-paper';
 
-export default function VideoPreview({ source }) {
+interface VideoPreviewProps {
+    source: number;
+    width: number;
+    height: number;
+}
+
+export default function VideoPreview({ source, width, height }: VideoPreviewProps) {
     const video = useRef(null);
     const [status, setStatus] = useState({});
     const [isPlaying, setIsPlaying] = useState(false);
+    const fadeAnim = useRef(new Animated.Value(1)).current;
 
     const handlePlayPause = () => {
         if (status.isPlaying) {
@@ -18,41 +25,39 @@ export default function VideoPreview({ source }) {
 
     useEffect(() => {
         setIsPlaying(status.isPlaying || false);
-    }, [status]);
-
-    const windowWidth = Dimensions.get('window').width;
-    const videoHeight = (windowWidth * 9) / 16;
+        Animated.timing(fadeAnim, {
+            toValue: status.isPlaying ? 0 : 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    }, [status, fadeAnim]);
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { width, height }]}>
             <Video
                 ref={video}
-                style={[styles.video, { width: windowWidth, height: videoHeight }]}
+                style={{ width, height }}
                 source={source}
                 resizeMode={ResizeMode.COVER}
                 isLooping
                 onPlaybackStatusUpdate={setStatus}
             />
-            <View style={styles.playButtonContainer}>
+            <Animated.View style={[styles.playButtonContainer, { opacity: fadeAnim }]}>
                 <IconButton
                     mode='contained-tonal'
-                    icon={isPlaying ? '' : 'play'}
+                    icon={isPlaying ? 'pause' : 'play'}
                     size={48}
                     onPress={handlePlayPause}
                 />
-            </View>
+            </Animated.View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    video: {
-        // width and height are now set dynamically
     },
     playButtonContainer: {
         position: 'absolute',

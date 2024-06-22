@@ -1,57 +1,84 @@
-import { ThemedText } from "@/components/ThemedText";
-import { View, Image } from "react-native";
-import VideoPreview from "@/components/VideoPreview";
-import { Text, useTheme, Button, IconButton } from 'react-native-paper';
-import { useRef, useState, useEffect } from "react";
+import React from 'react';
+import { View, ScrollView, ImageSourcePropType, StyleSheet } from "react-native";
+import { Snackbar, Text, useTheme } from 'react-native-paper';
+import { FFmpegKit } from 'ffmpeg-kit-react-native';
+import VideoPhotoCombo from '@/components/VideoPhotoCombo';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+
+
+interface ComboData {
+  videoSource: number;
+  photoSource: ImageSourcePropType;
+}
 
 export default function Index() {
   const theme = useTheme();
-  const ref = useRef(null);
+
+  // snackbar
+  const [visible, setVisible] = React.useState(false);
+  const onShowSnackBar = () => setVisible(true);
+  const onToggleSnackBar = () => setVisible(!visible);
+  const onDismissSnackBar = () => setVisible(false);
+
+  // hardcoded assets
+  const combos: ComboData[] = [
+    {
+      videoSource: require('@/assets/videos/Video1.mp4'),
+      photoSource: require('@/assets/images/Selfie1.jpeg')
+    },
+    {
+      videoSource: require('@/assets/videos/Video2.mp4'),
+      photoSource: require('@/assets/images/Selfie2.jpeg')
+    },
+    {
+      videoSource: require('@/assets/videos/Video3.mp4'),
+      photoSource: require('@/assets/images/Selfie3.jpeg')
+    },
+  ];
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: theme.colors.surface
-      }}
-    >
-      <Text variant="headlineLarge">Flick</Text>
-
-      <View style={{ flex: 1, padding: 10, flexDirection: "row" }}>
-        <View style={{ flex: 1, padding: 10 }}>
-          <Text variant="titleLarge">1. Video</Text>
-          <VideoPreview source={require('@/assets/videos/Video1.mp4')} />
-        </View>
-        <View style={{ flex: 1, padding: 10 }}>
-          <Text variant="titleLarge">Photo</Text>
-          {/* <Image
-            source={require('@/assets/images/Selfie1.jpeg')} style={{ alignSelf: 'center', maxHeight: 200, maxWidth: 200 }}
-          /> */}
-        </View>
-        <IconButton icon="download" mode="contained" size={40} onPress={() => console.log('Pressed')}></IconButton>
-      </View>
-
-      {/* <View style={{ flex: 1, padding: 10, flexDirection: "row" }}>
-        <View style={{ flex: 1, padding: 10 }}>
-          <Text variant="titleLarge">1. Video</Text>
-          <Button icon="video" mode="text" onPress={() => console.log('Pressed')}>Select video</Button>
-        </View>
-        <View style={{ flex: 1, padding: 10 }}>
-          <Text variant="titleLarge">Photo</Text>
-          <Button icon="image" mode="text" onPress={() => console.log('Pressed')}>Select photo</Button>
-        </View>
-        <IconButton icon="download" mode="contained" size={40} onPress={() => console.log('Pressed')}></IconButton>
-      </View> */}
-
-
-
-
-      {/* <Text variant="titleLarge">2. Video    photo</Text>
-      <Text variant="titleLarge">3. Video    photo</Text>
-      <Text>Edit app/index.tsx to edit this screen.</Text> */}
-
-    </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text variant="headlineLarge" style={{ alignSelf: 'center' }}>Flick</Text>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        {combos.map((combo, index) => (
+          <VideoPhotoCombo
+            key={index}
+            index={index + 1}
+            videoSource={combo.videoSource}
+            photoSource={combo.photoSource}
+            onShowSnackBar={onShowSnackBar}
+          />
+        ))}
+      </ScrollView>
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Open',
+          onPress: () => {
+            console.log("Todo open gallery");
+          },
+        }}>
+        Saved!
+      </Snackbar>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  headerText: {
+    // fontSize: 24,
+    // fontWeight: 'bold',
+    // textAlign: 'center',
+    // padding: 20,
+  },
+  scrollView: {
+    flexGrow: 1,
+    padding: 20,
+  },
+});

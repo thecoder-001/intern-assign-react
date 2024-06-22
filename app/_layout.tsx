@@ -6,7 +6,8 @@ export default function RootLayout() {
   return (
     <PaperProvider>
       <Stack screenOptions={{
-        header: (props) => <CustomNavigationBar {...props} />,
+        // header: (props) => <CustomNavigationBar {...props} />,
+        headerShown: false
       }}>
         <Stack.Screen name="index"/>
       </Stack>
