@@ -1,6 +1,6 @@
 # React native ffmpeg merge
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple react-native app to overlay images over video & save them to device gallery.
 
 ## Implemented features:
 
