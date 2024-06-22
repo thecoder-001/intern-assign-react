@@ -65,11 +65,10 @@ const VideoPhotoCombo: React.FC<VideoPhotoComboProps> = ({ index, videoSource, p
 
     } catch (error) {
       console.error('FFmpeg process failed', error);
-      Alert.alert('Error', 'Failed to save the video');
+      onShowSnackBar();
     } finally {
       setIsLoading(false);
       showDialog();
-      onShowSnackBar();
     }
   };
 

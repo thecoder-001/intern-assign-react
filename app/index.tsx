@@ -57,13 +57,13 @@ export default function Index() {
           visible={visible}
           onDismiss={onDismissSnackBar}
           action={{
-            label: 'Error!',
+            label: 'Dismiss',
             onPress: () => {
               console.log('Error!');
               onDismissSnackBar();
             },
           }}>
-          Saved!
+          Error! Failed to save video
         </Snackbar>
       </Portal.Host>
     </SafeAreaView>
